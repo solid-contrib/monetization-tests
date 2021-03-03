@@ -27,7 +27,7 @@ export function generateTestFolder(who: string) {
     console.warn(`Adding slash to the end of ${who}'s storage root ->"${storageRoot}"+"/"`);
     storageRoot += '/';
   }
-  const testFolder = `web-access-control-tests-${new Date().getTime()}`;
+  const testFolder = `monetization-tests-${new Date().getTime()}`;
   return {
     testFolder,
     testFolderUrl: `${storageRoot}${testFolder}/`

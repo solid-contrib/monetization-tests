@@ -22,9 +22,9 @@ echo Automated way to get an OIDC issuer cookie for Alice:
 export CURL_RESULT_ALICE=`curl -ki $OIDC_ISSUER_ALICE/login/password -d"username=$USERNAME_ALICE&password=$PASSWORD_ALICE" | grep Set-Cookie`
 export COOKIE_ALICE=`expr "$CURL_RESULT_ALICE" : '^Set-Cookie:\ \(.*\).'`
 
-# echo Automated way to get an OIDC issuer cookie for Bob:
-# export CURL_RESULT_BOB=`curl -ki $OIDC_ISSUER_BOB/login/password -d"username=$USERNAME_BOB&password=$PASSWORD_BOB" | grep Set-Cookie`
-# export COOKIE_BOB=`expr "$CURL_RESULT_BOB" : '^Set-Cookie:\ \(.*\).'`
+echo Automated way to get an OIDC issuer cookie for Bob:
+export CURL_RESULT_BOB=`curl -ki $OIDC_ISSUER_BOB/login/password -d"username=$USERNAME_BOB&password=$PASSWORD_BOB" | grep Set-Cookie`
+export COOKIE_BOB=`expr "$CURL_RESULT_BOB" : '^Set-Cookie:\ \(.*\).'`
 
 echo Running with these values for Alice:
 echo Cookie: $COOKIE_ALICE
