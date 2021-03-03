@@ -1,0 +1,1 @@
+@prefix acl: <http://www.w3.org/ns/auth/acl#>. <#alice> a acl:Authorization ; acl:agent <https://solidtestsuite.solidcommunity.net/profile/card#me> ; acl:accessTo </>; acl:default </>; acl:mode acl:Read, acl:Write, acl:Control .
