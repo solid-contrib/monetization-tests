@@ -72,6 +72,6 @@ describe('Read-Paying', () => {
       }
     });
     const result = await solidLogicBob.fetch(resourceUrl)
-    expect(result.status).toEqual("402");
+    expect(result.status).toEqual(402);
   });
 });
