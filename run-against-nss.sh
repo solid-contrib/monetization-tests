@@ -41,7 +41,7 @@ export NODE_TLS_REJECT_UNAUTHORIZED=0
 export STORAGE_ROOT_ALICE=$SYSTEM_UNDER_TEST/
 
 
-# npm run jest "$@"
-# npm run jest -- --json --outputFile="$RESULTS_PATH" "$@"
- export DEBUG=*
- ./node_modules/.bin/jest test/surface/p*
+npm run jest "$@"
+npm run jest -- --json --outputFile="$RESULTS_PATH" "$@"
+# export DEBUG=*
+# ./node_modules/.bin/jest test/surface/p*
