@@ -1,6 +1,31 @@
+import { URL } from 'url';
+import { createServer, Server } from 'http';
 import { SolidLogic } from 'solid-logic';
 import { generateTestFolder, getSolidLogicInstance, WEBID_ALICE, WEBID_BOB } from '../helpers/env';
-import { responseCodeGroup } from '../helpers/util';
+// import { responseCodeGroup } from '../helpers/util';
+
+class Oracle {
+  paid = []
+  calls: URL[]
+  server: Server
+  constructor() {
+    this.calls = []
+    this.server = createServer((req, res) => {
+      const url = new URL(`http://oracle${req.url}`);
+      console.log('oracle hit!', url.searchParams.get('agent'), url.searchParams.get('resource'))
+      this.calls.push(url)
+      if (this.paid.indexOf(url.searchParams.get('resource')) === -1) {
+        res.end(JSON.stringify({
+          payHeaders: [
+            'interledger-stream some.destination.account. Some+Shared+Secret+in+Base64=='
+          ]
+        }))
+      } else {
+        res.end('OK')
+      }
+    })
+  }
+}
 
 function makeBody(accessToModes: string, defaultModes: string, target: string) {
   let str = [
@@ -36,9 +61,16 @@ function makeBody(accessToModes: string, defaultModes: string, target: string) {
 describe('Read-Paying', () => {
   let solidLogicAlice: SolidLogic;
   let solidLogicBob: SolidLogic;
+  let oracle: Oracle;
   beforeAll(async () => {
     solidLogicAlice = await getSolidLogicInstance('ALICE')
     solidLogicBob = await getSolidLogicInstance('BOB')
+    oracle = new Oracle();
+    await oracle.server.listen(8402);
+    console.log('oracle listening')
+  });
+  afterAll(async () => {
+    oracle.server.close();
   });
   
   const { testFolderUrl } = generateTestFolder('ALICE');
@@ -73,5 +105,7 @@ describe('Read-Paying', () => {
     });
     const result = await solidLogicBob.fetch(resourceUrl)
     expect(result.status).toEqual(402);
+    const payHeader = result.headers.get('Pay');
+    expect(payHeader).toEqual('interledger-stream some.destination.account. Some+Shared+Secret+in+Base64==');
   });
 });

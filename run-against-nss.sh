@@ -43,5 +43,5 @@ export STORAGE_ROOT_ALICE=$SYSTEM_UNDER_TEST/
 
 # npm run jest "$@"
 # npm run jest -- --json --outputFile="$RESULTS_PATH" "$@"
-
-./node_modules/.bin/jest test/surface/p*
+ export DEBUG=*
+ ./node_modules/.bin/jest test/surface/p*
