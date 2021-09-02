@@ -12,16 +12,18 @@ class Oracle {
     this.calls = []
     this.server = createServer((req, res) => {
       const url = new URL(`http://oracle${req.url}`);
-      console.log('oracle hit!', url.searchParams.get('agent'), url.searchParams.get('resource'))
+      // console.log('oracle hit!', url.searchParams.get('agent'), url.searchParams.get('resource'))
       this.calls.push(url)
-      if (this.paid.indexOf(url.searchParams.get('resource')) === -1) {
+      const str = `${url.searchParams.get('agent')} ${url.searchParams.get('resource')}`
+      // console.log('searching guest list', str, this.paid)
+      if (this.paid.indexOf(str) === -1) {
         res.end(JSON.stringify({
           payHeaders: [
             'interledger-stream some.destination.account. Some+Shared+Secret+in+Base64=='
           ]
         }))
       } else {
-        res.end('OK')
+        res.end(JSON.stringify({ ok: true }));
       }
     })
   }
@@ -67,24 +69,16 @@ describe('Read-Paying', () => {
     solidLogicBob = await getSolidLogicInstance('BOB')
     oracle = new Oracle();
     await oracle.server.listen(8402);
-    console.log('oracle listening')
+    // console.log('oracle listening')
   });
   afterAll(async () => {
     oracle.server.close();
   });
   
   const { testFolderUrl } = generateTestFolder('ALICE');
-  beforeEach(async () => {
-    // FIXME: NSS ACL cache,
-    // wait for ACL cache to clear:
-    await new Promise(resolve => setTimeout(resolve, 20));
-  });
+  const resourceUrl = `${testFolderUrl}1/test.txt`;
 
-  afterEach(() => {
-    // return solidLogicAlice.recursiveDelete(testFolderUrl);
-  });
-  it('Gives a 402 with accessTo Read access on non-container resource', async () => {
-    const resourceUrl = `${testFolderUrl}1/test.txt`;
+  beforeEach(async () => {
     // This will do mkdir-p:
     const creationResult =  await solidLogicAlice.fetch(resourceUrl, {
       method: 'PUT',
@@ -103,9 +97,28 @@ describe('Read-Paying', () => {
         // 'If-None-Match': '*' - work around a bug in some servers that don't support If-None-Match on ACL doc URLs
       }
     });
+    
+    // FIXME: NSS ACL cache,
+    // wait for ACL cache to clear:
+    await new Promise(resolve => setTimeout(resolve, 20));
+  });
+
+  afterEach(() => {
+    // return solidLogicAlice.recursiveDelete(testFolderUrl);
+  });
+  it('Gives a 402', async () => {
     const result = await solidLogicBob.fetch(resourceUrl)
     expect(result.status).toEqual(402);
     const payHeader = result.headers.get('Pay');
     expect(payHeader).toEqual('interledger-stream some.destination.account. Some+Shared+Secret+in+Base64==');
   });
+  describe('After user pays', () => {
+    beforeAll(() => {
+      oracle.paid.push(`${WEBID_BOB} ${resourceUrl}`)
+    });
+    it('Gives a 200', async () => {
+      const result = await solidLogicBob.fetch(resourceUrl)
+      expect(result.status).toEqual(200);
+    });  
+  })
 });
